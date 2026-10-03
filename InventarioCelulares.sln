@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backend", "backend", "{E5E8AEF6-B5E4-4961-A46B-972E9CD861F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inventario.Celulares.Api", "backend\Inventario.Celulares.Api\Inventario.Celulares.Api.csproj", "{6A82CA58-F285-4B6F-A6EB-1F221AA30F0A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inventario.Celulares.Core", "backend\Inventario.Celulares.Core\Inventario.Celulares.Core.csproj", "{F50E19BE-9703-425D-AED7-26C7BAA2BA9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inventario.Celulares.Infrastructure", "backend\Inventario.Celulares.Infrastructure\Inventario.Celulares.Infrastructure.csproj", "{62664692-70CD-4B51-9589-C62BCAE2BAD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inventario.Celulares.Tests", "backend\Inventario.Celulares.Tests\Inventario.Celulares.Tests.csproj", "{A3EF6EE9-11C0-4F56-85C1-5CAAE22CC22C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A82CA58-F285-4B6F-A6EB-1F221AA30F0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A82CA58-F285-4B6F-A6EB-1F221AA30F0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A82CA58-F285-4B6F-A6EB-1F221AA30F0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A82CA58-F285-4B6F-A6EB-1F221AA30F0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F50E19BE-9703-425D-AED7-26C7BAA2BA9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F50E19BE-9703-425D-AED7-26C7BAA2BA9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F50E19BE-9703-425D-AED7-26C7BAA2BA9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F50E19BE-9703-425D-AED7-26C7BAA2BA9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62664692-70CD-4B51-9589-C62BCAE2BAD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62664692-70CD-4B51-9589-C62BCAE2BAD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62664692-70CD-4B51-9589-C62BCAE2BAD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62664692-70CD-4B51-9589-C62BCAE2BAD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3EF6EE9-11C0-4F56-85C1-5CAAE22CC22C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3EF6EE9-11C0-4F56-85C1-5CAAE22CC22C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3EF6EE9-11C0-4F56-85C1-5CAAE22CC22C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3EF6EE9-11C0-4F56-85C1-5CAAE22CC22C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6A82CA58-F285-4B6F-A6EB-1F221AA30F0A} = {E5E8AEF6-B5E4-4961-A46B-972E9CD861F6}
+		{F50E19BE-9703-425D-AED7-26C7BAA2BA9D} = {E5E8AEF6-B5E4-4961-A46B-972E9CD861F6}
+		{62664692-70CD-4B51-9589-C62BCAE2BAD1} = {E5E8AEF6-B5E4-4961-A46B-972E9CD861F6}
+		{A3EF6EE9-11C0-4F56-85C1-5CAAE22CC22C} = {E5E8AEF6-B5E4-4961-A46B-972E9CD861F6}
+	EndGlobalSection
+EndGlobal

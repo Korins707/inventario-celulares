@@ -1,0 +1,95 @@
+name: Snyk y Semgrep
+
+# Escaneo de vulnerabilidades en el codigo y en la imagen del contenedor.
+# Requiere secret: SNYK_TOKEN
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semgrep:
+    name: Semgrep (SAST del codigo)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Semgrep scan con reglas de seguridad
+        run: >-
+          semgrep ci
+          --config p/default
+          --config p/security-audit
+          --config p/secrets
+          --sarif
+          --sarif-output semgrep.sarif
+          --error
+
+      - name: Publicar resultado SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+  snyk-code:
+    name: Snyk Code (dependencias)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verificar secret SNYK_TOKEN
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -z "$SNYK_TOKEN" ]; then
+            echo "::error::Falta el secret SNYK_TOKEN en GitHub Actions."
+            exit 1
+          fi
+
+      - name: Escanear el frontend
+        working-directory: frontend
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: npx --yes snyk test --severity-threshold=high --fail-on-high
+
+  snyk-container:
+    name: Snyk Container (imagen Docker)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Construir la imagen del backend
+        run: docker build -t inventario-api:ci -f Dockerfile .
+
+      - name: Verificar secret SNYK_TOKEN
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -z "$SNYK_TOKEN" ]; then
+            echo "::error::Falta el secret SNYK_TOKEN en GitHub Actions."
+            exit 1
+          fi
+
+      - name: Escanear la imagen del contenedor
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: npx --yes snyk container test inventario-api:ci --severity-threshold=high --fail-on-high

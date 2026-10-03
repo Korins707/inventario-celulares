@@ -1,0 +1,6 @@
+@Inventario.Celulares.Api_HostAddress = http://localhost:5130
+
+GET {{Inventario.Celulares.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

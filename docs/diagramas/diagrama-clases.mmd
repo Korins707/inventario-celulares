@@ -1,0 +1,97 @@
+classDiagram
+    direction LR
+
+    class Device {
+        +Guid Id
+        +string Brand
+        +string Model
+        +string Imei
+        +DeviceStatus Status
+        +Guid LocationId
+        +DateTime EntryDate
+        +string Observations
+        +decimal PurchasePrice
+        +DateTime CreatedAt
+        +DateTime UpdatedAt
+    }
+
+    class Movement {
+        +Guid Id
+        +Guid DeviceId
+        +MovementType Type
+        +Guid FromLocationId
+        +Guid ToLocationId
+        +DateTime OccurredAt
+        +string Reason
+        +DateTime CreatedAt
+    }
+
+    class Location {
+        +Guid Id
+        +string Name
+        +string Code
+        +string Description
+    }
+
+    class User {
+        +Guid Id
+        +string Username
+        +string PasswordHash
+        +string FullName
+        +UserRole Role
+        +bool IsActive
+    }
+
+    class DeviceStatus {
+        <<enumeration>>
+        Disponible
+        Asignado
+        EnMantenimiento
+        DeBaja
+    }
+
+    class MovementType {
+        <<enumeration>>
+        Ingreso
+        Salida
+        Traslado
+        Baja
+    }
+
+    class InventoryService {
+        +CreateDeviceAsync(CreateDeviceRequest)
+        +GetDevicesAsync(DeviceQuery)
+        +GetDeviceByIdAsync(Guid)
+        +UpdateDeviceAsync(Guid, UpdateDeviceRequest)
+        +DeleteDeviceAsync(Guid)
+        +CreateMovementAsync(CreateMovementRequest)
+        +GetMovementsAsync(Guid)
+        +GetStockReportAsync()
+    }
+
+    class InventarioDbContext {
+        +DbSet Devices
+        +DbSet Movements
+        +DbSet Locations
+        +DbSet Users
+    }
+
+    class ImeiValidator {
+        +static bool IsValid(string)
+        +static string Normalize(string)
+    }
+
+    class Pbkdf2PasswordHasher {
+        +void CreateHash(string, out string)
+        +bool Verify(string, string)
+    }
+
+    Device "1" <-- "*" Location : se ubica en
+    Device "1" --> "*" Movement : genera
+    Movement --> Location : origen
+    Movement --> Location : destino
+    InventoryService ..> InventarioDbContext : persiste
+    InventoryService ..> ImeiValidator : valida
+    InventoryService ..> Pbkdf2PasswordHasher : verifica
+    Device ..> DeviceStatus
+    Movement ..> MovementType

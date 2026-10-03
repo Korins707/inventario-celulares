@@ -1,0 +1,101 @@
+name: Infrastructure as Code (Terraform)
+
+# Aprovisiona la infraestructura en Azure y la verifica con tfsec e Infracost.
+# Requiere secrets: AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+#                variables: ACR_NAME
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'infra/**'
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Aplicar el plan en Azure (dejar en false solo valida)'
+        required: true
+        default: 'false'
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+defaults:
+  run:
+    working-directory: infra
+
+jobs:
+  terraform:
+    name: Plan, seguridad y costo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Configurar credenciales de Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Formatear y validar
+        run: |
+          terraform fmt -check -recursive
+          terraform init -backend=false
+          terraform validate
+
+      - name: Plan (dry-run)
+        run: terraform plan -out=tfplan
+
+      - name: tfsec (analisis de seguridad de la IaC)
+        uses: aquasecurity/tfsec-action@v1
+        with:
+          soft_fail: false
+
+      - name: Infracost (estimacion de costo)
+        if: github.event_name != 'pull_request'
+        uses: infracost/actions/setup@v2
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+          path: infra
+
+      - name: Informe de costo
+        if: github.event_name != 'pull_request'
+        run: infracost breakdown --path infra/terraform.tfplan --format json --out-file infracost.json
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Comentar el costo en el Pull Request
+        if: github.event_name == 'pull_request' && secrets.INFRACOST_API_KEY != ''
+        uses: infracost/actions/comment@v2
+        with:
+          path: infra/terraform.tfplan
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publicar el resultado en el resumen
+        if: always()
+        run: |
+          {
+            echo "### Infraestructura"
+            echo ""
+            echo "- terraform validate: ejecutado"
+            echo "- tfsec: ejecutado"
+            echo "- Plan: \`infra/tfplan\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Aplicar la infraestructura
+        if: github.event_name == 'workflow_dispatch' && inputs.apply == 'true'
+        run: terraform apply -auto-approve tfplan

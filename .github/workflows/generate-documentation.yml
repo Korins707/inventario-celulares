@@ -1,0 +1,74 @@
+name: Generate Documentation
+
+# Genera la documentacion tecnica en formato Mermaid:
+# diccionario de datos, diagrama entidad-relacion, diagrama de clases,
+# diagrama de componentes y diagramas de despliegue.
+# Publica el resultado en el repositorio y en el resumen del workflow.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  documentacion:
+    name: Documentacion tecnica
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Instalar .NET SDK 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Instalar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generar los diagramas y el diccionario de datos
+        run: node scripts/generar-documentacion.mjs
+
+      - name: Validar la sintaxis Mermaid
+        run: |
+          npm install --no-save @mermaid-js/mermaid-cli
+          for archivo in docs/diagramas/*.mmd; do
+            echo "Validando $archivo"
+            mmdc -i "$archivo" -o "${archivo%.mmd}.svg" --quiet
+          done
+
+      - name: Publicar la documentacion
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --staged --quiet || git commit -m "docs: regenerar documentacion tecnica"
+          git push
+
+      - name: Resumen del workflow
+        if: always()
+        run: |
+          {
+            echo "### Documentacion generada"
+            echo ""
+            echo "- Diccionario de datos: \`docs/diccionario-de-datos.md\`"
+            echo "- Diagrama entidad-relacion: \`docs/diagramas/diagrama-entidad-relacion.mmd\`"
+            echo "- Diagrama de clases: \`docs/diagramas/diagrama-clases.mmd\`"
+            echo "- Diagrama de componentes: \`docs/diagramas/diagrama-componentes.mmd\`"
+            echo "- Diagramas de despliegue: \`docs/diagramas/diagrama-despliegue.mmd\`"
+            echo "- API (OpenAPI): \`docs/api/openapi.json\`"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,43 @@
+erDiagram
+    LOCATIONS ||--o{ DEVICES : "aloja"
+    DEVICES ||--o{ MOVEMENTS : "registra"
+    LOCATIONS ||--o{ MOVEMENTS : "origen"
+    LOCATIONS ||--o{ MOVEMENTS : "destino"
+
+    DEVICES {
+        uuid id PK
+        varchar brand
+        varchar model
+        varchar imei UK
+        varchar status
+        uuid location_id FK
+        timestamp entry_date
+        varchar observations
+        numeric purchase_price
+    }
+
+    MOVEMENTS {
+        uuid id PK
+        uuid device_id FK
+        varchar type
+        uuid from_location_id FK
+        uuid to_location_id FK
+        timestamp occurred_at
+        varchar reason
+    }
+
+    LOCATIONS {
+        uuid id PK
+        varchar name
+        varchar code UK
+        varchar description
+    }
+
+    USERS {
+        uuid id PK
+        varchar username UK
+        varchar password_hash
+        varchar full_name
+        varchar role
+        boolean is_active
+    }

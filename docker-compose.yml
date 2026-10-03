@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: inventario-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: inventario_celulares
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-claveLocalDeDesarrollo}
+    ports:
+      - "55432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d inventario_celulares"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inventario-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: >-
+        Host=postgres;Port=5432;Database=inventario_celulares;Username=postgres;Password=${DB_PASSWORD:-claveLocalDeDesarrollo}
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URL: http://+:8080
+      Cors__AllowedOrigins__0: http://localhost:5173
+      Cors__AllowedOrigins__1: http://localhost:3000
+      Cors__AllowedOrigins__2: http://localhost:4173
+    ports:
+      - "5080:8080"
+
+volumes:
+  postgres-data:

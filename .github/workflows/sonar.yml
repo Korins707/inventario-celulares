@@ -1,0 +1,113 @@
+name: SonarQube Analysis
+
+# Escaneo estatico del codigo (backend .NET y frontend React).
+# Requiere secrets: SONAR_TOKEN, SONAR_ORG, SONAR_PROJECT_KEY
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonar-backend:
+    name: SonarQube - Backend (.NET)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verificar secrets de SonarQube
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "::error::Falta el secret SONAR_TOKEN en GitHub Actions."
+            exit 1
+          fi
+
+      - name: Instalar .NET SDK 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restaurar dependencias
+        working-directory: backend
+        run: dotnet restore InventarioCelulares.sln
+
+      - name: Compilar en modo debug (requerido por el analizador)
+        working-directory: backend
+        run: dotnet build InventarioCelulares.sln --configuration Debug --no-restore
+
+      - name: Ejecutar pruebas con cobertura
+        working-directory: backend
+        run: |
+          dotnet test InventarioCelulares.sln \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults \
+            --logger "trx;LogFileName=tests.trx"
+
+      - name: Caché de SonarQube
+        uses: actions/cache@v4
+        with:
+          key: sonar-${{ hashFiles('.sonarqube/**') }}
+          path: ~/.sonar/cache
+          restore-keys: sonar-
+
+      - name: SonarQube Scan del backend
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+
+  sonar-frontend:
+    name: SonarQube - Frontend (React)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verificar secrets de SonarQube
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "::error::Falta el secret SONAR_TOKEN en GitHub Actions."
+            exit 1
+          fi
+
+      - name: Instalar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias del frontend
+        working-directory: frontend
+        run: npm ci
+
+      - name: Compilar el frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: SonarQube Scan del frontend
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+          SONAR_PROJECT_KEY_FRONTEND: ${{ secrets.SONAR_PROJECT_KEY_FRONTEND }}
+        with:
+          args: >-
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY_FRONTEND }}
+            -Dsonar.sources=frontend/src
+            -Dsonar.exclusions=frontend/dist,frontend/node_modules

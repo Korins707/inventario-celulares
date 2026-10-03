@@ -1,0 +1,53 @@
+flowchart TB
+    subgraph ClienteNavegador["Cliente"]
+        NAV["Navegador<br/>https://<app>.vercel.app"]
+    end
+
+    subgraph Vercel["Vercel (frontend)"]
+        CDN["CDN global<br/>archivos estaticos React"]
+    end
+
+    subgraph Contenedor["Azure Container Instances (backend)"]
+        API["API .NET 8<br/>contenedor Docker<br/>puerto 8080"]
+        HEALTH["/health<br/>HEALTHCHECK"]
+    end
+
+    subgraph Registro["Azure Container Registry"]
+        ACR["ACR<br/>inventarioapi:latest"]
+    end
+
+    subgraph DatosAzure["Servicio de datos"]
+        PG[("PostgreSQL 16<br/>base relacional")]
+    end
+
+    subgraph GitHub["GitHub Actions"]
+        SONAR["sonar.yml<br/>calidad de codigo"]
+        SCAN["snyk-semgrep.yml<br/>SAST y contenedor"]
+        TERRA["infra.yml<br/>Terraform + tfsec"]
+        DEPLOY["deploy.yml<br/>build y despliegue"]
+        DOCS["generate-documentation.yml<br/>diagramas Mermaid"]
+    end
+
+    NAV -->|"HTTPS"| CDN
+    CDN -.->|"CORS + fetch"| API
+    API --> HEALTH
+    API -->|"Npgsql / puerto 5432"| PG
+    ACR -.->|"imagen publicada"| API
+    TERRA -.->|"aprovisiona"| PG
+    DEPLOY -.->|"publica imagen"| ACR
+    DEPLOY -.->|"publica build"| CDN
+    SONAR -.->|"analiza"| API
+    SCAN -.->|"escanea"| ACR
+    DOCS -.->|"genera"| DocsOut["docs/*.mmd"]
+
+    classDef cliente fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a
+    classDef frontend fill:#e0e7ff,stroke:#4338ca,color:#312e81
+    classDef backend fill:#d1fae5,stroke:#059669,color:#064e3b
+    classDef datos fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef ci fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+
+    class NAV cliente
+    class CDN frontend
+    class API,HEALTH backend
+    class ACR,PG datos
+    class SONAR,SCAN,TERRA,DEPLOY,DOCS ci

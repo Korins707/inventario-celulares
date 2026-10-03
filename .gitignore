@@ -1,0 +1,58 @@
+# Dependencias
+node_modules/
+**/bin/
+**/obj/
+**/TestResults/
+packages/
+.venv/
+venv/
+
+# Build frontend
+dist/
+build/
+.vite/
+
+# Secretos y entorno
+.env
+.env.local
+.env.*.local
+*.pfx
+*.key
+appsettings.Production.json
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+tfplan
+*.tfplan
+
+# Herramientas
+.terraform/
+node_modules/.cache/
+coverage/
+coverage-*/
+binlog.txt
+
+# IDE / SO
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml

@@ -1,0 +1,53 @@
+flowchart TB
+    subgraph Cliente["Navegador del usuario"]
+        UI["Panel de equipos<br/>Buscador y filtros"]
+        FORM["Formularios<br/>Registro y edicion"]
+        MOV["Gestion de movimientos"]
+        REP["Reportes y graficos"]
+        ADM["Panel de administracion"]
+    end
+
+    subgraph Frontend["Frontend React + Vite"]
+        ROUTER["React Router<br/>/equipos /movimientos /reportes /admin"]
+        SERVICIO["Capa de servicios<br/>api.ts (fetch + manejo de errores)"]
+        ESTADO["Estado de la interfaz<br/>React useState/useEffect"]
+    end
+
+    subgraph Backend["API .NET 8 (contenedor Docker)"]
+        CTRL["Controllers<br/>Devices, Movements, Reports, Locations"]
+        VALID["Validacion de entrada<br/>DataAnnotations"]
+        SERV["InventoryService<br/>reglas de negocio"]
+        MID["ExceptionHandlingMiddleware<br/>respuestas JSON consistentes"]
+        IMEI["ImeiValidator<br/>algoritmo de Luhn"]
+    end
+
+    subgraph Datos["Persistencia"]
+        EF["EF Core 8<br/>InventarioDbContext"]
+        PG[("PostgreSQL 16<br/>devices, movements,<br/>locations, users")]
+    end
+
+    UI --> ROUTER
+    FORM --> ROUTER
+    MOV --> ROUTER
+    REP --> ROUTER
+    ADM --> ROUTER
+    ROUTER --> ESTADO
+    ESTADO --> SERVICIO
+    SERVICIO -->|"HTTP / JSON (CORS)"| CTRL
+    CTRL --> VALID
+    VALID --> SERV
+    CTRL -.-> MID
+    MID -.-> SERV
+    SERV --> IMEI
+    SERV --> EF
+    EF --> PG
+
+    classDef cliente fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a
+    classDef frontend fill:#e0e7ff,stroke:#4338ca,color:#312e81
+    classDef backend fill:#d1fae5,stroke:#059669,color:#064e3b
+    classDef datos fill:#fef3c7,stroke:#d97706,color:#78350f
+
+    class UI,FORM,MOV,REP,ADM cliente
+    class ROUTER,SERVICIO,ESTADO frontend
+    class CTRL,VALID,SERV,MID,IMEI backend
+    class EF,PG datos

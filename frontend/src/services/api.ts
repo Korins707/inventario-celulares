@@ -10,7 +10,7 @@ import type {
   StockReport
 } from '../types';
 
-const BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:8080').replace(/\/+$/, '');
+import { API_URL as BASE_URL } from '../config';
 
 /** Error de la API con mensaje legible para el usuario. */
 export class ApiRequestError extends Error {
